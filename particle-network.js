@@ -30,7 +30,8 @@
     this.canvas = parent.canvas;
     this.ctx = parent.ctx;
     this.particleColor = parent.options.particleColor;
-
+    this.opacity = parent.options.opacity;
+    this.hexToRgb = parent.hexToRgb;
     this.x = Math.random() * this.canvas.width;
     this.y = Math.random() * this.canvas.height;
     this.velocity = {
@@ -57,7 +58,7 @@
     // Draw particle
     this.ctx.beginPath();
     this.ctx.fillStyle = this.particleColor;
-    this.ctx.globalAlpha = 0.7;
+    this.ctx.globalAlpha = this.opacity;
     this.ctx.arc(this.x, this.y, 1.5, 0, 2 * Math.PI);
     this.ctx.fill();
   };
@@ -78,7 +79,8 @@
       background: (options.background !== undefined) ? options.background : '#1a252f',
       interactive: (options.interactive !== undefined) ? options.interactive : true,
       velocity: this.setVelocity(options.speed),
-      density: this.setDensity(options.density)
+      density: this.setDensity(options.density),
+      opacity: (options.opacity !== undefined) ? options.opacity : '1'
     };
 
     this.init();
@@ -268,7 +270,23 @@
       div.style[property] = styles[property];
     }
   }
-
+  // Helper method to convert hex to rgba
+  // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb#answer-36048299
+  ParticleNetwork.prototype.hexToRgb = function (hex, opacity) {
+    var c;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+      c = hex.substring(1).split('');
+      if (c.length === 3) {
+        c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+      }
+      c = '0x' + c.join('');
+      if (opacity !== 1) {
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + opacity + ')';
+      }
+      return 'rgb(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ')';
+    }
+    throw new Error('Bad Hex');
+  }
   return ParticleNetwork;
 
 }));
